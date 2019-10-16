@@ -1,6 +1,9 @@
 import csv
 import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 from global_variables import * 
+
 
 def load_csv_data(data_path, sub_sample=False):
     """Loads data and returns y (class labels), tX (features) and ids (event ids)"""
@@ -33,6 +36,15 @@ def clean_and_standardize_features(X):
     X_standardized = np.insert(X_standardized, 0, 1, axis=1)
     return X_standardized
 
+def correlation_heatmap(X):
+    correlations = np.corrcoef(X[:15000,:], rowvar=False)
+
+    fig, ax = plt.subplots(figsize=(10,10))
+    sns.heatmap(correlations, vmax=1.0, center=0, fmt='.2f',
+                square=True, linewidths=.5, annot=True, cbar_kws={"shrink": .70})
+    plt.show();
+    
+    
 def split_data(x, y, ratio, seed=1):
     """
     split the dataset based on the split ratio. If ratio is 0.8 
