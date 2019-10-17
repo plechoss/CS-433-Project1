@@ -2,7 +2,7 @@
 
 import numpy as np
 import math
-from global_variables import pos_weight
+from global_variables import pos_weight, lambda_rr
 
 def least_squares(y, tx):
     """ Linear regression using normal equations """
@@ -74,7 +74,7 @@ def compute_loss(y, tx, w, method, lambda_=0):
          lambdaTerm = lambda_*np.sum(w**2)/2
          return (-np.sum(y*np.log(predictions)*pos_weight + (1-y)*np.log(1-predictions))+ lambdaTerm)/y.shape[0]
     elif(method == 'ridge-regression'):
-        return 1/(2*y.shape[0])*np.sum(error*error)+np.linalg.norm(w)**2 
+        return 1/(2*y.shape[0])*np.sum(error*error)+ lambda_rr*np.linalg.norm(w)**2 
     # Missing lambda in this expression
     
 def compute_gradient(y, tx, w, method, lambda_=0):
