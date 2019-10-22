@@ -12,27 +12,31 @@ def build_k_indices(y, k_fold, seed):
                  for k in range(k_fold)]
     return np.array(k_indices)
 
-def cross_validation(y, x, k_indices, k, lambda_,method = 'ridge'):
+def cross_validation(y, x, k_indices, k, method, initial_w = None, batch_size =1, max_iters = 0, gamma = 0 , lambda_ = 0):
+    if (initial_w is None):
+        initial_w = np.ones(x.shape[1]) # see if random init
+    
     """ Only implemented for ridge for now """
     """return the loss of ridge regression."""
-    rmse_cv_tr = []
-    rmse_cv_te = []
+    err_cv_tr = []
+    err_cv_te = []
     
     # get k'th subgroup in test, others in train: 
     for k_fold in range(k) : 
-        idx_tr, idx_val = k_indices[np.r_[0:k_fold,(k_fold+1):k]], k_indices[k_fold]
-        x_tr, x_val = x[idx_tr].ravel(), x[idx_val].ravel()
-        y_tr, y_val = y[idx_tr].ravel(), y[idx_val].ravel()   
+        idx_tr, idx_val = k_indices[np.r_[0:k_fold,(k_fold+1):k]].ravel(), k_indices[k_fold]
+        x_tr, x_val = x[idx_tr,:], x[idx_val,:]
+        y_tr, y_val = y[idx_tr], y[idx_val]
        
+    # Take preprocessed data
     # form data with polynomial degree: 
-        x_poly_tr = build_poly(x_tr, degree)
-        x_poly_val = build_poly(x_val, degree)
+    #    x_poly_tr = build_poly(x_tr, degree)
+    #    x_poly_val = build_poly(x_val, degree)
         
-    # ridge regression:    
-        loss_tr, w_tr = ridge_regression(y_tr, x_poly_tr, lambda_)
-        loss_te = 1/(2*len(y_val)) * np.sum((y_val-x_poly_val@w_tr)**2)
+    # Applying method : (only least-square SGD for now)
+        loss_tr, w_tr = ML_methods(y_tr, x_tr, method, initial_w, batch_size, max_iters, gamma, lambda_)
+        loss_te = compute_loss(y_val, x_val, w_tr, method, lambda_)
         
     # calculate the loss for train and test data: 
-        rmse_cv_tr.append(np.sqrt(2*loss_tr))
-        rmse_cv_te.append(np.sqrt(2*loss_te))
-    return np.mean(rmse_cv_tr), np.mean(rmse_cv_te), np.var(rmse_cv_tr), np.var(rmse_cv_te)
+        err_cv_tr.append(loss_tr)
+        err_cv_te.append(loss_te)
+    return np.mean(err_cv_tr), np.mean(err_cv_te), np.var(err_cv_tr), np.var(err_cv_te)

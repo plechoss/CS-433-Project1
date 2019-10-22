@@ -16,14 +16,13 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
     w, loss = gradient_descent(y, tx, initial_w, max_iters, gamma, method)
     return w, loss
 
-def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
+def least_squares_SGD(y, tx, initial_w, batch_size, max_iters, gamma):
     """ Linear regression using stochastic gradient descent """
     method = "mse"
-    batch_size = 32   # todo: choose and explain suitable batch_size
+    #batch_size = 32   # todo: choose and explain suitable batch_size
     w, loss = stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma, method)
     return w, loss
 
-    
 def ridge_regression(y, tx, lambda_):
     """ Ridge regression """
     a_reg = 2 * tx.shape[0] * lambda_ * np.identity(tx.shape[1])
@@ -44,6 +43,20 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     method = "regularized-log"
     w, loss = gradient_descent(y, tx, initial_w, max_iters, gamma, method)
     return w, loss
+
+def ML_methods(y, tx, method, initial_w, batch_size =1, max_iters = 1, gamma = 0 , lambda_ = 0):
+    """ All methods grouped into one function """
+    if(method == 'mse'):
+        w, loss = least_squares_SGD(y, tx, initial_w, batch_size, max_iters, gamma)
+    elif(method == 'mae'):
+        raise NotImplementedError  
+    elif(method == 'log'):
+        w, loss = logistic_regression(y, tx, initial_w, max_iters, gamma)
+    elif(method == 'regularized-log'):
+        w, loss = reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma) 
+    elif(method == 'ridge-regression'):
+        w, loss = ridge_regression(y, tx, lambda_)
+    return loss, w
     
 def sigmoid(z):
     return 1 / (1 + math.exp(-z))
@@ -69,13 +82,12 @@ def compute_loss(y, tx, w, method, lambda_=0):
     elif(method == 'log'):
         predictions = predict(tx, w)
         return -np.sum(y*np.log(predictions)*pos_weight + (1-y)*np.log(1-predictions))/y.shape[0]
-    elif(method == 'regularized-log'
+    elif(method == 'regularized-log'):
          predictions = predict(tx, w)
          lambdaTerm = lambda_*np.sum(w**2)/2
          return (-np.sum(y*np.log(predictions)*pos_weight + (1-y)*np.log(1-predictions))+ lambdaTerm)/y.shape[0]
     elif(method == 'ridge-regression'):
-        return 1/(2*y.shape[0])*np.sum(error*error)+ lambda_rr*np.linalg.norm(w)**2 
-    # Missing lambda in this expression
+        return 1/(2*y.shape[0])*np.sum(error*error)+ lambda_*np.linalg.norm(w)**2 
     
 def compute_gradient(y, tx, w, method, lambda_=0):
     if(method=='log') or (method=='regularized-log'):
