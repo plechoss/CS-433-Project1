@@ -46,9 +46,13 @@ def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     w, loss = gradient_descent(y, tx, initial_w, max_iters, gamma, method)
     return w, loss
 
-def ML_methods(y, tx, method, initial_w, batch_size =1, max_iters = 1, gamma = 0 , lambda_ = 0):
+def ML_methods(y, tx, method, initial_w, batch_size = 1, max_iters = 1, gamma = 0 , lambda_ = 0):
     """ All methods grouped into one function """
-    if(method == 'mse'):
+    if(method == 'least-squares'):
+        w, loss = least_squares(y, tx)
+    elif(method == 'least-squares-GD'):
+        w, loss = least_squares_SGD(y, tx, initial_w, batch_size, max_iters, gamma)
+    elif(method == 'least-squares-SGD'):
         w, loss = least_squares_SGD(y, tx, initial_w, batch_size, max_iters, gamma)
     elif(method == 'mae'):
         raise NotImplementedError  
@@ -58,7 +62,7 @@ def ML_methods(y, tx, method, initial_w, batch_size =1, max_iters = 1, gamma = 0
         w, loss = reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma) 
     elif(method == 'ridge-regression'):
         w, loss = ridge_regression(y, tx, lambda_)
-    return loss, w
+    return w, loss
     
 def sigmoid(z):
     return 1 / (1 + math.exp(-z))
@@ -91,7 +95,7 @@ def compute_loss(y, tx, w, method, lambda_=0):
     elif(method == 'ridge-regression'):
         return 1/(2*y.shape[0])*np.sum(error*error)+ lambda_rr*np.linalg.norm(w)**2 
     
-def compute_gradient(y, tx, w, method, lambda_=0):
+def compute_gradient(y, tx, w, method, lambda_ = 0):
     if(method=='log') or (method=='regularized-log'):
         prediction = predict(tx, w)
     else:
@@ -107,7 +111,7 @@ def compute_gradient(y, tx, w, method, lambda_=0):
         gradient = tx.T@error + lambda_*w
     return gradient
 
-def gradient_descent(y, tx, initial_w, max_iters, gamma, method, lambda_=0):
+def gradient_descent(y, tx, initial_w, max_iters, gamma, method, lambda_ = 0):
     i = 0
     initial_w = initial_w/100 # initialize at small weights else gradient descent might explode at first iteration
     w_res = initial_w
@@ -163,7 +167,7 @@ def stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma, 
     for minibatch_y, minibatch_tx in batch_iter(y, tx, batch_size, max_iters):
         gradient = compute_gradient(minibatch_y, minibatch_tx, w, method)
         loss = compute_loss(minibatch_y, minibatch_tx, w, method)
-        w = w- gamma * gradient
+        w = w - gamma * gradient
         # store w and loss
         w_res = w
         loss_res = loss
