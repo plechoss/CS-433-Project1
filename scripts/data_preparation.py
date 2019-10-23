@@ -36,6 +36,13 @@ def clean_and_standardize_features(X):
     X_standardized = np.insert(X_standardized, 0, 1, axis=1)
     return X_standardized
 
+def standardize(x_tr, x_te):
+    mu = np.mean(x_tr, axis=0)
+    sigma = np.std(x_tr, axis=0)
+    std_x_tr = (x_tr - mu)/sigma
+    std_x_te = (x_te - mu) / sigma   
+    return std_x_tr, std_x_te
+
 def correlation_heatmap(X):
     correlations = np.corrcoef(X[:15000,:], rowvar=False)
 
