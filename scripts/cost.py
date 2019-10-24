@@ -65,15 +65,14 @@ def ML_methods(y, tx, method, initial_w, batch_size = 1, max_iters = 1, gamma = 
     return w, loss
     
 def sigmoid(z):
-  if(z < 0):
-    return 1 - 1/(1 + math.exp(z))
-  else:
-    return 1/(1 + math.exp(-z))
+    if(z < 0):
+        return 1 - 1/(1 + math.exp(z))
+    else:
+        return 1/(1 + math.exp(-z))
 
 def predict(x, w):
     temp = x@w
-    print(x.max())
-    print(x.min())
+    ind = temp.argmax()
     sigmoid_vec = np.vectorize(sigmoid)
     return sigmoid_vec(temp)
 
@@ -85,51 +84,54 @@ def compute_mse(y, tx, w):
 
 def compute_loss(y, tx, w, method, lambda_=0):
     predictions = tx@w
-    error = y-predictions
+    error = predictions - y
     if(method == 'mse'):
         return 1/(2*y.shape[0])*np.sum(error*error)
     elif(method == 'mae'):
         return 1/(y.shape[0])*np.sum(np.abs(error))
     elif(method == 'log'):
+        #loss = np.abs(np.sum(np.log(1+np.exp(predictions)) - y@predictions.T)/y.shape[0]) # formula from course, gives negative losses?
         predictions = predict(tx, w)
-        loss = -np.sum(y*np.log(predictions)*pos_weight + (1-y)*np.log(1-predictions))/y.shape[0]
-        print(loss)
+        loss = -np.sum(y*np.log(predictions) + (1-y)*np.log(1-predictions))/y.shape[0]
         return loss
     elif(method == 'regularized-log'):
-         predictions = predict(tx, w)
-         lambdaTerm = lambda_*np.sum(w**2)/2
-         return (-np.sum(y*np.log(predictions)*pos_weight + (1-y)*np.log(1-predictions))+ lambdaTerm)/y.shape[0]
+        predictions = predict(tx, w)
+        lambdaTerm = lambda_*np.sum(w**2)/2
+        return -np.sum(y*np.log(predictions) + (1-y)*np.log(1-predictions))/y.shape[0] + lambdaTerm
     elif(method == 'ridge-regression'):
-        return 1/(2*y.shape[0])*np.sum(error*error)+ lambda_rr*np.linalg.norm(w)**2 
+        return 1/(2*y.shape[0])*np.sum(error*error)+ lambda_*np.linalg.norm(w)**2 
     
 def compute_gradient(y, tx, w, method, lambda_ = 0):
-    if(method=='log') or (method=='regularized-log'):
+    if(method=='log' or method=='regularized-log'):
         prediction = predict(tx, w)
     else:
         prediction = tx@w
-    error = y-prediction
+    #import pdb; pdb.set_trace()
+    error = prediction - y
     if(method=='mse') or (method =='ridge-regression'): # TODO: rename methods, mse is probably not a good name 
-        gradient = -1/y.shape[0]*tx.T@error + 2*lambda_*w
+        gradient = 1/y.shape[0]*tx.T@error + 2*lambda_*w
     elif(method == 'mae'):
-        gradient = - 1/y.shape[0]* tx.T@np.sign(error)
+        gradient =  1/y.shape[0]* tx.T@np.sign(error)
     elif(method == 'log'):
-        gradient = tx.T@error
+        gradient =  1/y.shape[0]*tx.T@error
     elif(method == 'regularized-log'):
-        gradient = tx.T@error + lambda_*w
+        gradient =  1/y.shape[0]*tx.T@error + lambda_*w
     return gradient
 
 def gradient_descent(y, tx, initial_w, max_iters, gamma, method, lambda_ = 0):
     i = 0
-    initial_w = initial_w/1000 # initialize at small weights else gradient descent might explode at first iteration
+    initial_w = initial_w/100 # initialize at small weights else gradient descent might explode at first iteration
     w_res = initial_w
     loss_hist = []
     w = initial_w
     for n_iter in range(max_iters):
         gradient = compute_gradient(y, tx, w, method, lambda_)
-        loss = compute_loss(y, tx, w,method, lambda_)
+        loss = compute_loss(y, tx, w, method, lambda_)
         w = w - gamma * gradient
         # store w and loss
         w_res = w
+        if(i>0):
+            print("difference to last loss " + str(loss_hist[-1]-loss))
         loss_hist.append(loss)
         #print("Gradient Descent({bi}/{ti}): loss={l}".format(
               #bi=n_iter, ti=max_iters - 1, l=loss))
@@ -138,7 +140,7 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma, method, lambda_ = 0):
         if i % 1000 == 0:
             print("iter: " + str(i) + " loss: "+str(loss_hist[-1]))
 
-    return loss_hist, w_res
+    return w_res, loss_hist
 
 def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
     """
