@@ -21,7 +21,6 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
 def least_squares_SGD(y, tx, initial_w, batch_size, max_iters, gamma):
     """ Linear regression using stochastic gradient descent """
     method = "mse"
-    #batch_size = 32   # todo: choose and explain suitable batch_size
     w, loss = stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma, method)
     return w, loss
 
@@ -85,39 +84,40 @@ def compute_mse(y, tx, w):
     return mse
 
 def compute_loss(y, tx, w, method, lambda_=0):
-    predictions = tx@w
-    error = predictions - y
+    prediction = tx@w
+    error = prediction - y
     if(method == 'mse'):
         return 1/(2*y.shape[0])*np.sum(error*error)
     elif(method == 'mae'):
         return 1/(y.shape[0])*np.sum(np.abs(error))
     elif(method == 'log'):
-        #loss = np.abs(np.sum(np.log(1+np.exp(predictions)) - y@predictions.T)/y.shape[0]) # formula from course, gives negative losses?
-        predictions = predict(tx, w)
-        loss = -np.sum(y*np.log(predictions) + (1-y)*np.log(1-predictions))/y.shape[0]
+        #loss = np.abs(np.sum(np.log(1+np.exp(prediction)) - y@prediction.T)/y.shape[0]) # formula from course, gives negative losses?
+        prediction = predict(tx, w)
+        loss = -np.sum(y*np.log(prediction) + (1-y)*np.log(1-prediction))/y.shape[0]
         return loss
     elif(method == 'regularized-log'):
-        predictions = predict(tx, w)
+        prediction = predict(tx, w)
         lambdaTerm = lambda_*np.sum(w**2)/2
-        return -np.sum(y*np.log(predictions) + (1-y)*np.log(1-predictions))/y.shape[0] + lambdaTerm
+        return -np.sum(y*np.log(prediction) + (1-y)*np.log(1-prediction))/y.shape[0] + lambdaTerm
     elif(method == 'ridge-regression'):
-        return 1/(2*y.shape[0])*np.sum(error*error)+ lambda_*np.linalg.norm(w)**2 
+        return 1/(2*y.shape[0])*np.sum(error*error)+ lambda_*np.linalg.norm(w)**2
+    else:
+        raise notImplementedError
     
 def compute_gradient(y, tx, w, method, lambda_=0):
     if(method=='log' or method=='regularized-log'):
         prediction = predict(tx, w)
     else:
         prediction = tx@w
-    #import pdb; pdb.set_trace()
     error = prediction - y
-    if(method=='mse') or (method =='ridge-regression'): # TODO: rename methods, mse is probably not a good name 
-        gradient = 1/y.shape[0]*tx.T@error + 2*lambda_*w
+    if(method=='mse') or (method =='log'): # TODO: rename methods, mse is probably not a good name 
+        gradient = 1/y.shape[0]*tx.T@error
     elif(method == 'mae'):
-        gradient =  1/y.shape[0]* tx.T@np.sign(error)
-    elif(method == 'log'):
-        gradient =  1/y.shape[0]*tx.T@error
+        gradient = 1/y.shape[0]* tx.T@np.sign(error)
+    elif(method == 'ridge-regression'):
+        gradient = 1/y.shape[0]*tx.T@error + 2*lambda_*w
     elif(method == 'regularized-log'):
-        gradient =  1/y.shape[0]*tx.T@error + lambda_*w
+        gradient = 1/y.shape[0]*tx.T@error + lambda_*w
     return gradient
 
 def gradient_descent(y, tx, initial_w, max_iters, gamma, method, lambda_=0):
@@ -167,12 +167,12 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
 
 def stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma, method):
     w_res = initial_w
-    loss_res = 0
+    loss_res = np.inf  # initialize to inf to make sure value gets reassigned
     w = initial_w
     ti = max_iters
     for minibatch_y, minibatch_tx in batch_iter(y, tx, batch_size, max_iters):
-        gradient = compute_gradient(minibatch_y, minibatch_tx, w, 'mse')
-        loss = compute_loss(minibatch_y, minibatch_tx, w, 'mse')
+        gradient = compute_gradient(minibatch_y, minibatch_tx, w, method)
+        loss = compute_loss(minibatch_y, minibatch_tx, w, method)
         w = w - gamma * gradient
         # store w and loss
         w_res = w
