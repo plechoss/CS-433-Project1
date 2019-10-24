@@ -121,7 +121,6 @@ def compute_gradient(y, tx, w, method, lambda_=0):
     return gradient
 
 def gradient_descent(y, tx, initial_w, max_iters, gamma, method, lambda_=0):
-    i = 0
     initial_w = initial_w/100 # initialize at small weights else gradient descent might explode at first iteration
     w_res = initial_w
     loss_hist = []
@@ -138,11 +137,6 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma, method, lambda_=0):
         loss_hist.append(loss)
         #print("Gradient Descent({bi}/{ti}): loss={l}".format(
               #bi=n_iter, ti=max_iters - 1, l=loss))
-        # Log Progress
-        i = i + 1
-        if i % 1000 == 0:
-            print("iter: " + str(i) + " loss: "+str(loss_hist[-1]))
-
     return w_res, loss_hist
 
 def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
