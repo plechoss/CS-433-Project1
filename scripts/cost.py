@@ -101,8 +101,8 @@ def compute_gradient(y, tx, w, method, lambda_ = 0):
     else:
         prediction = tx@w
     error = y-prediction
-    if(method=='mse'):
-        gradient = -1/y.shape[0]*tx.T@error
+    if(method=='mse') or (method =='ridge-regression'): #we should probably rename our methods, mse is probably not a good name 
+        gradient = -1/y.shape[0]*tx.T@error + 2*lambda_*w
     elif(method == 'mae'):
         gradient = - 1/y.shape[0]* tx.T@np.sign(error)
     elif(method == 'log'):
