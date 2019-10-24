@@ -65,10 +65,15 @@ def ML_methods(y, tx, method, initial_w, batch_size = 1, max_iters = 1, gamma = 
     return w, loss
     
 def sigmoid(z):
-    return 1 / (1 + math.exp(-z))
+  if(z < 0):
+    return 1 - 1/(1 + math.exp(z))
+  else:
+    return 1/(1 + math.exp(-z))
 
 def predict(x, w):
     temp = x@w
+    print(x.max())
+    print(x.min())
     sigmoid_vec = np.vectorize(sigmoid)
     return sigmoid_vec(temp)
 
@@ -87,7 +92,9 @@ def compute_loss(y, tx, w, method, lambda_=0):
         return 1/(y.shape[0])*np.sum(np.abs(error))
     elif(method == 'log'):
         predictions = predict(tx, w)
-        return -np.sum(y*np.log(predictions)*pos_weight + (1-y)*np.log(1-predictions))/y.shape[0]
+        loss = -np.sum(y*np.log(predictions)*pos_weight + (1-y)*np.log(1-predictions))/y.shape[0]
+        print(loss)
+        return loss
     elif(method == 'regularized-log'):
          predictions = predict(tx, w)
          lambdaTerm = lambda_*np.sum(w**2)/2
@@ -101,7 +108,7 @@ def compute_gradient(y, tx, w, method, lambda_ = 0):
     else:
         prediction = tx@w
     error = y-prediction
-    if(method=='mse') or (method =='ridge-regression'): #we should probably rename our methods, mse is probably not a good name 
+    if(method=='mse') or (method =='ridge-regression'): # TODO: rename methods, mse is probably not a good name 
         gradient = -1/y.shape[0]*tx.T@error + 2*lambda_*w
     elif(method == 'mae'):
         gradient = - 1/y.shape[0]* tx.T@np.sign(error)
@@ -113,7 +120,7 @@ def compute_gradient(y, tx, w, method, lambda_ = 0):
 
 def gradient_descent(y, tx, initial_w, max_iters, gamma, method, lambda_ = 0):
     i = 0
-    initial_w = initial_w/100 # initialize at small weights else gradient descent might explode at first iteration
+    initial_w = initial_w/1000 # initialize at small weights else gradient descent might explode at first iteration
     w_res = initial_w
     loss_hist = []
     w = initial_w
