@@ -1,6 +1,6 @@
 """ Cross-validation """
-""" Only implemented for Ridge regression for now """
 from cost import *
+from data_preparation import standardize
 
 def build_k_indices(y, k_fold, seed):
     """build k indices for k-fold."""
@@ -25,7 +25,7 @@ def cross_validation(y, x, k_indices, k, method, initial_w = None, batch_size =1
         x_tr, x_val = x[idx_tr,:], x[idx_val,:]
         y_tr, y_val = y[idx_tr], y[idx_val]
         
-        # Normalized data 
+        # Normalize data 
         x_tr, x_val = standardize(x_tr, x_val)
         
         # Do the preprocessing, e.g 
@@ -40,4 +40,4 @@ def cross_validation(y, x, k_indices, k, method, initial_w = None, batch_size =1
     # calculate the loss for train and test data: 
         err_cv_tr.append(loss_tr)
         err_cv_te.append(loss_te)
-    return np.mean(err_cv_tr), np.mean(err_cv_te), np.var(err_cv_tr), np.var(err_cv_te)
+    return err_cv_tr, err_cv_te 

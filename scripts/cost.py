@@ -2,7 +2,6 @@
 
 import numpy as np
 import math
-from global_variables import pos_weight, lambda_rr
 
 def least_squares(y, tx):
     """ Linear regression using normal equations """
@@ -12,25 +11,29 @@ def least_squares(y, tx):
     loss = compute_mse(y, tx, w)
     return w, loss
 
-def least_squares_GD(y, tx, initial_w, max_iters, gamma):
+def least_squares_GD(y, tx, initial_w, max_iters, gamma, method):
     """ Linear regression using gradient descent """
-    method = "mse"
     w, loss = gradient_descent(y, tx, initial_w, max_iters, gamma, method)
     return w, loss
 
-def least_squares_SGD(y, tx, initial_w, batch_size, max_iters, gamma):
+def least_squares_SGD(y, tx, initial_w, batch_size, max_iters, gamma,method):
     """ Linear regression using stochastic gradient descent """
-    method = "mse"
     w, loss = stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma, method)
     return w, loss
 
+def MAE_GD(y, tx, initial_w, max_iters, gamma):
+    method = "mae"
+    w, loss = gradient_descent(y, tx, initial_w, max_iters, gamma, method)
+    return w, loss
+    
 def ridge_regression(y, tx, lambda_):
     """ Ridge regression """
+    method = "ridge-regression"
     a_reg = 2 * tx.shape[0] * lambda_ * np.identity(tx.shape[1])
     a = tx.T.dot(tx) + a_reg
     b = tx.T.dot(y)
     w = np.linalg.solve(a, b)
-    loss = compute_mse(y, tx, w)
+    loss = compute_mse(y, tx, w) + lambda_ * w.T @ w
     return w, loss
 
 def logistic_regression(y, tx, initial_w, max_iters, gamma):
@@ -42,102 +45,50 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """ Regularized logistic regression using gradient descent or SGD """
     method = "regularized-log"
-    w, loss = gradient_descent(y, tx, initial_w, max_iters, gamma, method, lambda_)
+    w, loss = gradient_descent(y, tx, initial_w, max_iters, gamma, method)
     return w, loss
 
-def ML_methods(y, tx, method, initial_w, batch_size = 1, max_iters = 1, gamma = 0 , lambda_ = 0):
-    """ All methods grouped into one function """
-    if(method == 'least-squares'):
-        w, loss = least_squares(y, tx)
-    elif(method == 'least-squares-GD'):
-        w, loss = least_squares_GD(y, tx, initial_w, max_iters, gamma)
-    elif(method == 'least-squares-SGD'):
-        w, loss = least_squares_SGD(y, tx, initial_w, batch_size, max_iters, gamma)
-    elif(method == 'mae'):
-        raise NotImplementedError  
-    elif(method == 'log'):
-        w, loss = logistic_regression(y, tx, initial_w, max_iters, gamma)
-    elif(method == 'regularized-log'):
-        w, loss = reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma) 
-    elif(method == 'ridge-regression'):
-        w, loss = ridge_regression(y, tx, lambda_)
-    if(type(loss) is list and len(loss)>1):
-        return w, loss[-1]
-    return w, loss   # only return final values of w and loss
-    
-def sigmoid(z):
-    if(z < 0):
-        return 1 - 1/(1 + math.exp(z))
-    else:
-        return 1/(1 + math.exp(-z))
+def logistic_regression_Newton(y, tx, initial_w, max_iters, gamma):
+    " Logistic regression using Newton's method "
+    method = "log-newton"
+    w, loss = gradient_descent(y, tx, initial_w, max_iters, gamma, method)
+    return w, loss
 
-def predict(x, w):
-    temp = x@w
-    ind = temp.argmax()
-    sigmoid_vec = np.vectorize(sigmoid)
-    return sigmoid_vec(temp)
+    
+def calculate_hessian(y, tx, w):
+    """return the hessian of the loss function."""
+    S = sigmoid(tx@w) * (1-sigmoid(tx@w))
+    S = np.diag(S.ravel())
+    H = tx.T @ S @ tx
+    return H
+
 
 def compute_mse(y, tx, w):
     """compute the loss by mse."""
-    e = y - tx.dot(w)
-    mse = e.dot(e) / (2 * len(e))
+    mse = 1/(2*len(y)) * np.sum((y-tx@w)**2)
     return mse
-
-def compute_loss(y, tx, w, method, lambda_=0):
-    prediction = tx@w
-    error = prediction - y
-    if(method == 'mse'):
-        return 1/(2*y.shape[0])*np.sum(error*error)
-    elif(method == 'mae'):
-        return 1/(y.shape[0])*np.sum(np.abs(error))
-    elif(method == 'log'):
-        #loss = np.abs(np.sum(np.log(1+np.exp(prediction)) - y@prediction.T)/y.shape[0]) # formula from course, gives negative losses?
-        prediction = predict(tx, w)
-        loss = -np.sum(y*np.log(prediction) + (1-y)*np.log(1-prediction))/y.shape[0]
-        return loss
-    elif(method == 'regularized-log'):
-        prediction = predict(tx, w)
-        lambdaTerm = lambda_*np.sum(w**2)/2
-        return -np.sum(y*np.log(prediction) + (1-y)*np.log(1-prediction))/y.shape[0] + lambdaTerm
-    elif(method == 'ridge-regression'):
-        return 1/(2*y.shape[0])*np.sum(error*error)+ lambda_*np.linalg.norm(w)**2
-    else:
-        raise notImplementedError
     
-def compute_gradient(y, tx, w, method, lambda_=0):
-    if(method=='log' or method=='regularized-log'):
-        prediction = predict(tx, w)
-    else:
-        prediction = tx@w
-    error = prediction - y
-    if(method=='mse') or (method =='log'): # TODO: rename methods, mse is probably not a good name 
-        gradient = 1/y.shape[0]*tx.T@error
-    elif(method == 'mae'):
-        gradient = 1/y.shape[0]* tx.T@np.sign(error)
-    elif(method == 'ridge-regression'):
-        gradient = 1/y.shape[0]*tx.T@error + 2*lambda_*w
-    elif(method == 'regularized-log'):
-        gradient = 1/y.shape[0]*tx.T@error + lambda_*w
-    return gradient
+def sigmoid(t):
+    """apply sigmoid function on t."""
+    return (1 / (1 + np.exp(-t)))
 
-def gradient_descent(y, tx, initial_w, max_iters, gamma, method, lambda_=0):
-    initial_w = initial_w/100 # initialize at small weights else gradient descent might explode at first iteration
-    w_res = initial_w
-    loss_hist = []
+
+def gradient_descent(y, tx, initial_w, max_iters, gamma, method, lambda_ = 0):
     w = initial_w
+    
     for n_iter in range(max_iters):
         gradient = compute_gradient(y, tx, w, method, lambda_)
-        loss = compute_loss(y, tx, w, method, lambda_)
-        w = w - gamma * gradient
-        # store w and loss
-        w_res = w
-        # check that cost decreases on every iteration
-        #if(i>0):
-        #   print("difference to last loss " + str(loss_hist[-1]-loss))
-        loss_hist.append(loss)
-        #print("Gradient Descent({bi}/{ti}): loss={l}".format(
-              #bi=n_iter, ti=max_iters - 1, l=loss))
-    return w_res, loss_hist
+        loss = compute_loss(y, tx, w,method, lambda_)
+        
+        if (method == 'log-newton') : 
+            hessian = calculate_hessian(y, tx, w)
+            b = hessian @w - gamma * grad
+            w = np.linalg.solve(hessian,b)
+            
+        else :
+            w = w - gamma * gradient
+        
+    return w, loss
 
 def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
     """
@@ -166,15 +117,64 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
 
 
 def stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma, method):
-    w_res = initial_w
-    loss_res = np.inf  # initialize to inf to make sure value gets reassigned
     w = initial_w
-    ti = max_iters
     for minibatch_y, minibatch_tx in batch_iter(y, tx, batch_size, max_iters):
         gradient = compute_gradient(minibatch_y, minibatch_tx, w, method)
         loss = compute_loss(minibatch_y, minibatch_tx, w, method)
         w = w - gamma * gradient
-        # store w and loss
-        w_res = w
-        loss_res = loss
-    return w_res, loss_res
+    return w, loss
+
+
+# """ Grouping all functions into one """"
+
+def ML_methods(y, tx, method, initial_w, batch_size = 1, max_iters = 1, gamma = 0 , lambda_ = 0):
+    """ All methods grouped into one function """
+    if(method == 'least-squares'):
+        w, loss = least_squares(y, tx)
+    elif(method == 'least-squares-GD'):
+        w, loss = least_squares_GD(y, tx, initial_w, max_iters, gamma, method)
+    elif(method == 'least-squares-SGD'):
+        w, loss = least_squares_SGD(y, tx, initial_w, batch_size, max_iters, gamma, method)
+    elif(method == 'mae'):
+         w, loss = MAE_GD(y, tx, initial_w, batch_size, max_iters, gamma)
+    elif(method == 'log'):
+        w, loss = logistic_regression(y, tx, initial_w, max_iters, gamma)
+    elif(method == 'regularized-log'):
+        w, loss = reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma) 
+    elif(method == 'ridge-regression'):
+        w, loss = ridge_regression(y, tx, lambda_)
+    return w, loss
+
+
+def compute_loss(y, tx, w, method, lambda_=0):
+    predictions = tx@w
+    error = y-predictions
+    if(method == 'least-squares') or (method == 'least-squares-GD') or (method == 'least-squares-SGD') :
+        mse = 1/(2*len(y)) * np.sum(error**2)
+        loss = np.sqrt(2*mse)
+    elif(method == 'ridge-regression'):
+        loss = 1/(2*len(y)) * np.sum(error**2) + lambda_ * w.T @ w
+    elif(method == 'mae'):
+        loss = 1/(len(y)) * np.sum(np.abs(error))
+    elif(method == 'log'):
+        predictions = sigmoid(tx@w)
+        loss = - (y.T @ np.log(predictions) + (1-y).T @ np.log(1-predictions))
+    elif(method == 'regularized-log'):
+        predictions = sigmoid(tx@w)
+        loss = - (y.T @ np.log(predictions) + (1-y).T @ np.log(1-predictions)) + lambda_ * w.T @ w
+    return loss
+
+def compute_gradient(y, tx, w, method, lambda_=0):
+    if(method=='log') or (method=='regularized-log'):
+        prediction = sigmoid(tx@w)
+    else:
+        prediction = tx@w
+    error = y-prediction
+    if (method == 'least-squares') or (method == 'least-squares-GD') or (method == 'least-squares-SGD') or (method =='ridge-regression'): 
+        gradient = -1/(len(y))*tx.T@error + 2*lambda_*w
+    elif(method == 'mae'):
+        gradient = - 1/(len(y))* tx.T@np.sign(error)
+    elif(method == 'log') or (method == 'regularized-log'):
+        gradient = tx.T@error + 2*lambda_*w
+    return gradient
+    
