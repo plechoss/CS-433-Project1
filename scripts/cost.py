@@ -45,7 +45,7 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
     """ Regularized logistic regression using gradient descent or SGD """
     method = "regularized-log"
-    w, loss = gradient_descent(y, tx, initial_w, max_iters, gamma, method)
+    w, loss = gradient_descent(y, tx, initial_w, max_iters, gamma, method, lambda_)
     return w, loss
 
 def logistic_regression_Newton(y, tx, initial_w, max_iters, gamma):
@@ -78,11 +78,11 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma, method, lambda_ = 0):
     
     for n_iter in range(max_iters):
         gradient = compute_gradient(y, tx, w, method, lambda_)
-        loss = compute_loss(y, tx, w,method, lambda_)
+        loss = compute_loss(y, tx, w, method, lambda_)
         
         if (method == 'log-newton') : 
             hessian = calculate_hessian(y, tx, w)
-            b = hessian @w - gamma * grad
+            b = hessian @ w - gamma * grad
             w = np.linalg.solve(hessian,b)
             
         else :
@@ -143,6 +143,8 @@ def ML_methods(y, tx, method, initial_w, batch_size = 1, max_iters = 1, gamma = 
         w, loss = reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma) 
     elif(method == 'ridge-regression'):
         w, loss = ridge_regression(y, tx, lambda_)
+    elif(method == 'log-newton'):
+        w, loss = logistic_regression_Newton(y, tx, initial_w, max_iters, gamma)
     return w, loss
 
 
@@ -153,9 +155,10 @@ def compute_loss(y, tx, w, method, lambda_=0):
         loss = 1/(2*len(y)) * np.sum(error**2) + lambda_ * w.T @ w
     elif(method == 'mae'):
         loss = 1/(len(y)) * np.sum(np.abs(error))
-    elif(method == 'log') or (method == 'regularized-log'):
+    elif(method == 'log') or (method == 'regularized-log') or (method == 'log-newton'):
         predictions = sigmoid(tx@w)
-        loss = - (y.T @ np.log(predictions) + (1-y).T @ np.log(1-predictions)) + lambda_ * w.T @ w
+        epsilon = 1e-5 
+        loss = -1/(len(y)) * (y.T @ np.log(predictions + epsilon) + (1-y).T @ np.log(1-predictions + epsilon)) + lambda_ * w.T @ w
     return loss
 
 def compute_gradient(y, tx, w, method, lambda_=0):
@@ -168,7 +171,7 @@ def compute_gradient(y, tx, w, method, lambda_=0):
         gradient = -1/(len(y))*tx.T@error + 2*lambda_*w
     elif(method == 'mae'):
         gradient = - 1/(len(y))* tx.T@np.sign(error)
-    elif(method == 'log') or (method == 'regularized-log'):
-        gradient = tx.T@error + 2*lambda_*w
+    elif(method == 'log') or (method == 'regularized-log') or (method == 'log-newton'):
+        gradient = 1/(len(y)) * tx.T@error + 2*lambda_*w
     return gradient
     
