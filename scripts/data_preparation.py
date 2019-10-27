@@ -30,12 +30,14 @@ def load_data():
     X = data[:, 2:]    
     return X, Y
 
-def clean_and_standardize_features(X, method='', remove_cols=[0,4,5,6,12,23,24,25,26,27,28]):
+def clean_features(X, method=''):
     #remove_cols = [0,4,5,6,12,23,24,25,26,27,28]
     #remove_cols = [0,2,3,4,5,6,7,8,9,14,15,16,17,18,19,20,22,23,24,25,26,27,28,29]
     X_clean = np.copy(X)
     #remove the specified columns
+    remove_cols = features_to_remove(X, Y)
     X_clean = np.delete(X_clean, remove_cols, 1)
+    
     if(method!=''):
         X_clean[X_clean==-999] = np.nan
         #replace -999s with 0s
@@ -50,11 +52,13 @@ def clean_and_standardize_features(X, method='', remove_cols=[0,4,5,6,12,23,24,2
                 replacements = np.nanmedian(X_clean, axis=0)
             inds = np.where(np.isnan(X_clean))
             X_clean[inds] = np.take(replacements, inds[1])
-    #standardize the values per column
-    X_standardized = (X_clean - X_clean.mean(axis=0))/X_clean.std(axis = 0)
-    #insert a column of 1s in the beginning
-    X_standardized = np.insert(X_standardized, 0, 1, axis=1)
-    return X_standardized
+    return X_clean
+
+def standardize(X):
+    mu = np.mean(X, axis=0)
+    sigma = np.std(X, axis=0)
+    std_x_tr = (X - mu)/sigma
+    return std_x_tr
 
 def standardize(x_tr, x_te):
     mu = np.mean(x_tr, axis=0)
@@ -62,6 +66,15 @@ def standardize(x_tr, x_te):
     std_x_tr = (x_tr - mu)/sigma
     std_x_te = (x_te - mu) / sigma   
     return std_x_tr, std_x_te
+
+#returns a 1-D array of the values of correlations between features and the output
+def feature_corrs(X, Y):
+    return np.corrcoef(np.column_stack([Y,X])[15000], rowvar=False)[0,1:]
+
+#returns a 1-D array of indices of features to be removed
+def features_to_remove(X, Y):
+    correlations = feature_corrs(X, Y)
+    return np.argwhere(np.abs(correlations)>0.15).flatten()
 
 def correlation_heatmap(X):
     correlations = np.corrcoef(X[:15000,:], rowvar=False)
