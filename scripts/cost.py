@@ -59,8 +59,7 @@ def logistic_regression_Newton(y, tx, initial_w, max_iters, gamma):
 def calculate_hessian(y, tx, w):
     """return the hessian of the loss function."""
     S = sigmoid(tx@w) * (1-sigmoid(tx@w))
-    S = np.diag(S.ravel())
-    H = tx.T @ S @ tx
+    H = (tx.T*S) @ tx
     return H
 
 
@@ -84,7 +83,7 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma, method, lambda_ = 0):
         
         if (method == 'log-newton') : 
             hessian = calculate_hessian(y, tx, w)
-            b = hessian @ w - gamma * grad
+            b = hessian @ w - gamma * gradient
             w = np.linalg.solve(hessian,b)
             
         else :
