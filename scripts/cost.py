@@ -7,6 +7,7 @@ def least_squares(y, tx):
     """ Linear regression using normal equations """
     a = tx.T@tx
     b = tx.T@y
+    # solve normal equations
     w = np.linalg.solve(a,b)
     loss = compute_mse(y, tx, w)
     return w, loss
@@ -28,10 +29,10 @@ def MAE_GD(y, tx, initial_w, max_iters, gamma):
     
 def ridge_regression(y, tx, lambda_):
     """ Ridge regression """
-    method = "ridge-regression"
     a_reg = 2 * tx.shape[0] * lambda_ * np.identity(tx.shape[1])
     a = tx.T.dot(tx) + a_reg
     b = tx.T.dot(y)
+    # solve normal equations
     w = np.linalg.solve(a, b)
     loss = compute_mse(y, tx, w) + lambda_ * w.T @ w
     return w, loss
@@ -77,6 +78,7 @@ def gradient_descent(y, tx, initial_w, max_iters, gamma, method, lambda_ = 0):
     w = initial_w
     
     for n_iter in range(max_iters):
+        # perform 1 iteration of gradient descent with the chosen method
         gradient = compute_gradient(y, tx, w, method, lambda_)
         loss = compute_loss(y, tx, w, method, lambda_)
         
@@ -118,6 +120,7 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
 
 def stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma, method):
     w = initial_w
+    # iterates repeatedly over subsets of the examples
     for minibatch_y, minibatch_tx in batch_iter(y, tx, batch_size, max_iters):
         gradient = compute_gradient(minibatch_y, minibatch_tx, w, method)
         loss = compute_loss(minibatch_y, minibatch_tx, w, method)
@@ -149,24 +152,28 @@ def ML_methods(y, tx, method, initial_w, batch_size = 1, max_iters = 1, gamma = 
 
 
 def compute_loss(y, tx, w, method, lambda_=0):
+    # calculate error
     predictions = tx@w
     error = y-predictions
+    # depending on method, the returned loss is calculated
     if (method == 'least-squares') or (method == 'least-squares-GD') or (method == 'least-squares-SGD') or (method =='ridge-regression'):
         loss = 1/(2*len(y)) * np.sum(error**2) + lambda_ * w.T @ w
     elif(method == 'mae'):
         loss = 1/(len(y)) * np.sum(np.abs(error))
     elif(method == 'log') or (method == 'regularized-log') or (method == 'log-newton'):
         predictions = sigmoid(tx@w)
-        epsilon = 1e-5 
+        epsilon = 1e-5   # parameter to ensure a real value is returned
         loss = -1/(len(y)) * (y.T @ np.log(predictions + epsilon) + (1-y).T @ np.log(1-predictions + epsilon)) + lambda_ * w.T @ w
     return loss
 
 def compute_gradient(y, tx, w, method, lambda_=0):
+    # calculate error
     if(method=='log') or (method=='regularized-log'):
         prediction = sigmoid(tx@w)
     else:
         prediction = tx@w
     error = y-prediction
+    # depending on method, the returned gradient is calculated
     if (method == 'least-squares') or (method == 'least-squares-GD') or (method == 'least-squares-SGD') or (method =='ridge-regression'): 
         gradient = -1/(len(y))*tx.T@error + 2*lambda_*w
     elif(method == 'mae'):
