@@ -43,3 +43,16 @@ def find_best_threshold(Y_predicted, Y_labeled):
     print('best threshold is: ' + str(best_t))
     print('best performance is: ' + str(best_perf))
     return best_t, best_perf    
+
+def test_polynomial_performance(X, Y, max_degree=15, method='least_squares'):
+    # tests the performance of different degree polynomials, using least_squares
+    for i in range(max_degree+1):
+        X_test = build_poly(X, i+1)
+        N = X_test.shape[1]
+        
+        w_test, loss_test = ML_methods(Y, X_test, method, max_iters=500,gamma=0.1)
+        
+        prediction = label_results(predict(X_test, w_test))
+        perf = performance(prediction, label_results(Y))
+        
+        print("Performance for X of polynomial of degree " + str(i) + " is " + str(perf))

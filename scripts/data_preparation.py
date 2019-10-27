@@ -30,9 +30,29 @@ def load_data():
     X = data[:, 2:]    
     return X, Y
 
-def clean_and_standardize_features(X):
-    X_clean = np.delete(X,[0,4,5,6,12,23,24,25,26,27,28], axis=1)
+def clean_and_standardize_features(X, method='', remove_cols=[0,4,5,6,12,23,24,25,26,27,28]):
+    #remove_cols = [0,4,5,6,12,23,24,25,26,27,28]
+    #remove_cols = [0,2,3,4,5,6,7,8,9,14,15,16,17,18,19,20,22,23,24,25,26,27,28,29]
+    X_clean = np.copy(X)
+    #remove the specified columns
+    X_clean = np.delete(X_clean, remove_cols, 1)
+    if(method!=''):
+        X_clean[X_clean==-999] = np.nan
+        #replace -999s with 0s
+        if(method=='0'):
+            X_clean = np.nan_to_num(X_clean)
+        else:
+            #replace -999s with the column mean
+            if(method=='mean'):    
+                replacements = np.nanmean(X_clean, axis=0)
+            #replace -999s with the column median
+            elif(method=='median'):
+                replacements = np.nanmedian(X_clean, axis=0)
+            inds = np.where(np.isnan(X_clean))
+            X_clean[inds] = np.take(replacements, inds[1])
+    #standardize the values per column
     X_standardized = (X_clean - X_clean.mean(axis=0))/X_clean.std(axis = 0)
+    #insert a column of 1s in the beginning
     X_standardized = np.insert(X_standardized, 0, 1, axis=1)
     return X_standardized
 
@@ -72,9 +92,13 @@ def split_data(x, y, ratio, seed=1):
     return (x_tr, y_tr, x_val, y_val)
 
 def build_poly(x, degree):
+    # removes the first column which in our case is just 1s
     """polynomial basis functions for input data x, for j=0 up to j=degree."""
-    x = np.reshape(x,(-1,1))
-    phi = x**0
-    for j in range(1, degree + 1):
-        phi =  np.concatenate((phi,x**j),axis=1)
-    return(phi)
+    n = x.shape[1]
+    columns = []
+    for col in range(n):
+        temp = np.repeat(x[:,col].reshape(x.shape[0],1).T,degree, axis=0).T
+        for i in range(degree):
+            temp[:,i] = temp[:,i]**(i)
+        columns.append(temp)
+    return np.column_stack(columns)
