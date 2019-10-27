@@ -149,17 +149,11 @@ def ML_methods(y, tx, method, initial_w, batch_size = 1, max_iters = 1, gamma = 
 def compute_loss(y, tx, w, method, lambda_=0):
     predictions = tx@w
     error = y-predictions
-    if(method == 'least-squares') or (method == 'least-squares-GD') or (method == 'least-squares-SGD') :
-        mse = 1/(2*len(y)) * np.sum(error**2)
-        loss = np.sqrt(2*mse)
-    elif(method == 'ridge-regression'):
+    if (method == 'least-squares') or (method == 'least-squares-GD') or (method == 'least-squares-SGD') or (method =='ridge-regression'):
         loss = 1/(2*len(y)) * np.sum(error**2) + lambda_ * w.T @ w
     elif(method == 'mae'):
         loss = 1/(len(y)) * np.sum(np.abs(error))
-    elif(method == 'log'):
-        predictions = sigmoid(tx@w)
-        loss = - (y.T @ np.log(predictions) + (1-y).T @ np.log(1-predictions))
-    elif(method == 'regularized-log'):
+    elif(method == 'log') or (method == 'regularized-log'):
         predictions = sigmoid(tx@w)
         loss = - (y.T @ np.log(predictions) + (1-y).T @ np.log(1-predictions)) + lambda_ * w.T @ w
     return loss
