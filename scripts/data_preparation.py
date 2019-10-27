@@ -30,7 +30,7 @@ def load_data():
     X = data[:, 2:]    
     return X, Y
 
-def clean_features(X, method=''):
+def clean_features(X, Y, method=''):
     #remove_cols = [0,4,5,6,12,23,24,25,26,27,28]
     #remove_cols = [0,2,3,4,5,6,7,8,9,14,15,16,17,18,19,20,22,23,24,25,26,27,28,29]
     X_clean = np.copy(X)
@@ -54,11 +54,16 @@ def clean_features(X, method=''):
             X_clean[inds] = np.take(replacements, inds[1])
     return X_clean
 
-def standardize(X):
+def standardize_X(X):
     mu = np.mean(X, axis=0)
     sigma = np.std(X, axis=0)
     std_x_tr = (X - mu)/sigma
     return std_x_tr
+
+def findMeanSigma(X):
+    mu = np.mean(X, axis=0)
+    sigma = np.std(X, axis=0)
+    return mu, sigma
 
 def standardize(x_tr, x_te):
     mu = np.mean(x_tr, axis=0)
@@ -69,7 +74,7 @@ def standardize(x_tr, x_te):
 
 #returns a 1-D array of the values of correlations between features and the output
 def feature_corrs(X, Y):
-    return np.corrcoef(np.column_stack([Y,X])[15000], rowvar=False)[0,1:]
+    return np.corrcoef(np.column_stack([Y,X])[:15000], rowvar=False)[0,1:]
 
 #returns a 1-D array of indices of features to be removed
 def features_to_remove(X, Y):
