@@ -1,7 +1,15 @@
 import numpy as np 
 
-def performance(Y, Y_predicted):
-    return np.sum(Y == Y_predicted)/Y.shape[0]
+#takes as an argument pure, unlabeled Y and Y_predicted
+def performance(Y, Y_predictions):
+    best_t = 0
+    best_perf = 0
+    for i in range(0, 100):
+        perf = np.sum(label_results(Y) == label_results(Y_predicted, threshold=i/100))/Y.shape[0]
+        if(perf>best_perf):
+            best_t = i/100
+            best_perf = perf
+    return best_t, best_perf    
 
 def evaluate_performance(Y, Y_predicted):
     false_negatives = 0
@@ -24,25 +32,10 @@ def evaluate_performance(Y, Y_predicted):
     #print('True negatives: ' + str(true_negatives))
     #print('False negatives: ' + str(false_negatives))
     
-#set the threshold to 0.618 for mse, 0.458 for cross-enthropy
-def label_results(Y_predicted, threshold=0.51):
+def label_results(Y_predicted, threshold=0.5):
     f = lambda x: -1 if x<threshold else 1
     f_vec = np.vectorize(f)
-    return f_vec(Y_predicted)
-    
-def find_best_threshold(Y_predicted, Y_labeled):
-    best_t = 0.5
-    best_perf = performance(Y_labeled, label_results(Y_predicted, threshold=best_t))
-    for i in range(0, 100):
-        perf = performance(Y_labeled, label_results(Y_predicted, threshold=i/100))>best_perf
-        print('threshold is: ' + str(i/100))
-        print('performance is: ' + str(perf))
-        if(perf>best_perf):
-            best_t = i/100
-            best_perf = perf
-    print('best threshold is: ' + str(best_t))
-    print('best performance is: ' + str(best_perf))
-    return best_t, best_perf    
+    return f_vec(Y_predicted) 
 
 def test_polynomial_performance(X, Y, max_degree=15, method='least_squares'):
     # tests the performance of different degree polynomials, using least_squares
