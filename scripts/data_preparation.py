@@ -83,26 +83,6 @@ def correlation_heatmap(X):
     sns.heatmap(correlations, vmax=1.0, center=0, fmt='.2f',
                 square=True, linewidths=.5, annot=True, cbar_kws={"shrink": .70})
     plt.show();
-    
-    
-def split_data(x, y, ratio, seed=1):
-    """
-    split the dataset based on the split ratio. If ratio is 0.8 
-    you will have 80% of your data set dedicated to training 
-    and the rest dedicated to testing
-    """
-    # set seed
-    np.random.seed(seed)
-    random_idx = np.arange(x.shape[0])
-    np.random.shuffle(random_idx)
-    x = x[random_idx]
-    y = y[random_idx]
-    val_split = int(ratio*x.shape[0])
-    x_tr = x[:val_split]
-    y_tr = y[:val_split]
-    x_val = x[val_split:]
-    y_val = y[val_split:]
-    return (x_tr, y_tr, x_val, y_val)
 
 def build_poly(x, degree):
     # removes the first column which in our case is just 1s
