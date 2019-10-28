@@ -1,7 +1,10 @@
 import numpy as np 
 
-# takes as an argument pure, unlabeled Y and Y_predicted
+
 def performance(y_given, y_predicted):
+    """Takes as an argument labels from loaded data (y_given) and pure, unlabeled predictions (y_predicted)
+        Finds the best threshold for labeling predictions
+        Returns the percentage of correct predictions"""
     best_t = 0
     best_perf = 0
     y_labeled = label_results(y_given, 0.5)
@@ -13,6 +16,7 @@ def performance(y_given, y_predicted):
     return best_t, best_perf
 
 def evaluate_performance(y_given, y_predicted):
+    """Prints the confusion matrix for labels from loaded data (y_given) and predictions (y_predicted)"""
     false_negatives = 0
     true_negatives = 0
     false_positives = 0
@@ -34,14 +38,17 @@ def evaluate_performance(y_given, y_predicted):
     print('False negatives: ' + str(false_negatives))
     
 def label_results(y_predicted, threshold=0.5):
+    """Maps the predictions to -1 or 1 based on a given threshold
+        Returns labeled predictions"""
     f = lambda x: -1 if x<threshold else 1
     f_vec = np.vectorize(f)
     output = np.copy(y_predicted)
     output = f_vec(output) 
     return output
 
-def test_polynomial_performance(X, Y, max_degree=15, method='least_squares'):
-    # tests the performance of different degree polynomials, using least_squares
+def test_polynomial_performance(X, Y, max_degree=10, method='least_squares'):
+    """Tests the performance of different degree polynomials, using least_squares by default"""
+    print("Testing the prediction accuracy of different degree polynomials using " + method)
     for i in range(max_degree+1):
         X_test = build_poly(X, i+1)
         N = X_test.shape[1]
