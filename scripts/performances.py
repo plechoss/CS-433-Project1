@@ -1,7 +1,7 @@
 import numpy as np 
 
-#takes as an argument pure, unlabeled Y and Y_predicted
-def performance(Y, Y_predictions):
+# takes as an argument pure, unlabeled Y and Y_predicted
+def performance(Y, Y_predicted):
     best_t = 0
     best_perf = 0
     for i in range(0, 100):

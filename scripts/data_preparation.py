@@ -33,52 +33,39 @@ def load_data():
 def clean_features(X, X_val, Y, method=''):
     #remove_cols = [0,4,5,6,12,23,24,25,26,27,28]
     #remove_cols = [0,2,3,4,5,6,7,8,9,14,15,16,17,18,19,20,22,23,24,25,26,27,28,29]
+    # no preprocessing    
     if (method == 'raw'):
-        # no preprocessing
         return X, X_val
-    else :
-        X_clean = np.copy(X)
-        X_clean_val = np.copy(X_val)
-        # choose the columns to remove based on training set
-        remove_cols = features_to_remove(X, Y)
-        #remove the specified columns in both the training and validation sets
-        X_clean = np.delete(X_clean, remove_cols, 1)
-        X_clean_val = np.delete(X_clean_val, remove_cols, 1)
+
+    X_clean = np.copy(X)
+    X_clean_val = np.copy(X_val)
+
+    if(method!=''):
+        X_clean[X_clean==-999] = np.nan
+        X_clean_val[X_clean_val==-999] = np.nan
     
-        if(method!=''):
-            X_clean[X_clean==-999] = np.nan
-            X_clean_val[X_clean_val==-999] = np.nan
-            #replace -999s with 0s
-        if(method=='0'):
-            X_clean = np.nan_to_num(X_clean)
-            X_clean_val = np.nan_to_num(X_clean_val)
-        else:
-            #replace -999s with the column mean of the training set
-            if(method=='mean'):    
-                replacements = np.nanmean(X_clean, axis=0)
-            #replace -999s with the column median of the training set
-            elif(method=='median'):
-                replacements = np.nanmedian(X_clean, axis=0)
-            inds = np.where(np.isnan(X_clean))
-            inds_val = np.where(np.isnan(X_clean_val))
-            X_clean[inds] = np.take(replacements, inds[1])
-            X_clean_val[inds_val] = np.take(replacements, inds_val[1])
+    # replace -999s with 0s
+    if(method=='0'):
+        X_clean = np.nan_to_num(X_clean)
+        X_clean_val = np.nan_to_num(X_clean_val)
+    else:
+        # replace -999s with the column mean of the training set
+        if(method=='mean'):    
+            replacements = np.nanmean(X_clean, axis=0)
+        
+        # replace -999s with the column median of the training set
+        elif(method=='median'):
+            replacements = np.nanmedian(X_clean, axis=0)
+        inds = np.where(np.isnan(X_clean))
+        inds_val = np.where(np.isnan(X_clean_val))
+        X_clean[inds] = np.take(replacements, inds[1])
+        X_clean_val[inds_val] = np.take(replacements, inds_val[1])
+        
     return X_clean, X_clean_val
 
 def add_bias(x):
     tx = np.c_[np.ones((x.shape[0], 1)), x]
     return tx
-
-#def standardize_X(X):
-#    mu = np.mean(X, axis=0)
-#    sigma = np.std(X, axis=0)
-#    std_x_tr = (X - mu)/sigma
-#    return std_x_tr
-
-#def findMeanSigma(X):
-#    mu = np.mean(X, axis=0)
-#    sigma = np.std(X, axis=0)
-#    return mu, sigma
 
 def standardize(x):
     mu = np.mean(x, axis=0)
