@@ -162,7 +162,9 @@ def compute_loss(y, tx, w, method, lambda_=0):
     elif(method == 'log') or (method == 'regularized-log') or (method == 'log-newton'):
         predictions = sigmoid(tx@w)
         epsilon = 1e-5   # parameter to ensure a real value is returned
-        loss = -1/(len(y)) * (y.T @ np.log(predictions + epsilon) + (1-y).T @ np.log(1-predictions + epsilon)) + lambda_ * w.T @ w
+        #loss = -1/(len(y)) * (y.T @ np.log(predictions + epsilon) + (1-y).T @ np.log(1-predictions + epsilon)) + lambda_ * w.T @ w
+        loss = -1/len(y) * (y.T @ np.log(predictions + epsilon) + (1-y).T @ np.log(1-predictions + epsilon) - lambda_ * w.T @ w)
+        
     return loss
 
 def compute_gradient(y, tx, w, method, lambda_=0):
@@ -178,6 +180,6 @@ def compute_gradient(y, tx, w, method, lambda_=0):
     elif(method == 'mae'):
         gradient = - 1/(len(y))* tx.T@np.sign(error)
     elif(method == 'log') or (method == 'regularized-log') or (method == 'log-newton'):
-        gradient = 1/(len(y)) * tx.T@error + 2*lambda_*w
+        gradient = 1/len(y) * (tx.T@error + 2*lambda_*w)
     return gradient
     
