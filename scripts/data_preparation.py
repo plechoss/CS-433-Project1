@@ -85,7 +85,7 @@ def feature_corrs(X, Y):
 def features_to_remove(X, Y):
     """Returns a 1-D array of indices of features to be removed based on a correlation threshold"""
     correlations = feature_corrs(X, Y)
-    return np.argwhere(np.abs(correlations)>0.15).flatten()
+    return np.argwhere(np.abs(correlations)<0.15).flatten()
 
 
 def correlation_heatmap(X):

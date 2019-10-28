@@ -17,6 +17,7 @@ def cross_validation(y, x, k_indices, k, method, batch_size =1, max_iters = 1, g
     """ Perform cross validation on selected ML technique. """
     err_cv_tr = []
     err_cv_te = []
+    accuracy = []
     
     # get k'th subgroup in test, others in train
     for k_fold in range(k) : 
@@ -35,12 +36,13 @@ def cross_validation(y, x, k_indices, k, method, batch_size =1, max_iters = 1, g
         
         # Remove features that don't correlate with result
         toRemove = features_to_remove(x_tr_std, y_tr)
-        x_tr_sel = np.delete(x_tr_std, toRemove, 1)
-        x_val_sel = np.delete(x_val_std, toRemove, 1)
+        print(toRemove)
+        x_tr_rem = np.delete(x_tr_std, toRemove, 1)
+        x_val_rem = np.delete(x_val_std, toRemove, 1)
         
         # Add bias term 
-        x_tr_sel = add_bias(x_tr_sel)
-        x_val_sel = add_bias(x_val_sel)
+        x_tr_sel = add_bias(x_tr_rem)
+        x_val_sel = add_bias(x_val_rem)
         
         # Initiate weights at random values
         initial_w = np.random.rand(x_tr_sel.shape[1])
