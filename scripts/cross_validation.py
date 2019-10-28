@@ -35,14 +35,13 @@ def cross_validation(y, x, k_indices, k, method, batch_size =1, max_iters = 1, g
         x_val_std = (x_val_clean-mu)/sigma
         
         # Remove features that don't correlate with result
-        toRemove = features_to_remove(x_tr_std, y_tr)
-        print(toRemove)
-        x_tr_rem = np.delete(x_tr_std, toRemove, 1)
-        x_val_rem = np.delete(x_val_std, toRemove, 1)
+        #toRemove = features_to_remove(x_tr_std, y_tr)
+        #x_tr_rem = np.delete(x_tr_std, toRemove, 1)
+        #x_val_rem = np.delete(x_val_std, toRemove, 1)
         
         # Add bias term 
-        x_tr_sel = add_bias(x_tr_rem)
-        x_val_sel = add_bias(x_val_rem)
+        x_tr_sel = add_bias(x_tr_std)
+        x_val_sel = add_bias(x_val_std)
         
         # Initiate weights at random values
         initial_w = np.random.rand(x_tr_sel.shape[1])
