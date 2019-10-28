@@ -1,4 +1,4 @@
-"""a function of ploting figures."""
+""" Functions for plotting figures."""
 import numpy as np
 import matplotlib.pyplot as plt
 
