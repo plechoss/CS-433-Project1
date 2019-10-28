@@ -1,5 +1,6 @@
-## CS-433 Project 1
-The run.py file produces the final prediction in a submission.csv file.
+# Project 1 : The Higgs boson
+By Clara Bonnet, Lisa Dratva and Michal Pleskowicz.<br/>CS-433 @ EPFL
+
 ### Folder structure:
 * scripts:
     * cross_validation.py : helper methods to perform cross-validation
@@ -11,6 +12,9 @@ The run.py file produces the final prediction in a submission.csv file.
 * data:
     * train.csv : training data
     * test.csv : testing data
+    
+### Usage:
+Running the run.py file produces the final prediction in a submission.csv file. See the report for more details on the methods used, as well as the code itself for details of implementations. 
 
-### Requirements
+### Requirements:
 We developed and tested the code with Python 3.7.1 and Numpy 1.15.4.
