@@ -4,7 +4,7 @@ from data_preparation import *
 from performances import *
 
 def build_k_indices(y, k_fold, seed):
-    """build k indices for k-fold."""
+    """ Build k indices for k-fold."""
     num_row = y.shape[0]
     interval = int(num_row / k_fold)
     np.random.seed(seed)
@@ -14,12 +14,11 @@ def build_k_indices(y, k_fold, seed):
     return np.array(k_indices)
 
 def cross_validation(y, x, k_indices, k, method, batch_size =1, max_iters = 1, gamma = 0 , lambda_ = 0, clean_method=''):
+    """ Perform cross validation on selected ML technique. """
     err_cv_tr = []
     err_cv_te = []
-    acc_cv_tr = []
-    acc_cv_te = []
     
-    # get k'th subgroup in test, others in train: 
+    # get k'th subgroup in test, others in train
     for k_fold in range(k) : 
         idx_tr, idx_val = k_indices[np.r_[0:k_fold,(k_fold+1):k]].ravel(), k_indices[k_fold]
         x_tr, x_val = x[idx_tr,:], x[idx_val,:]
@@ -54,7 +53,7 @@ def cross_validation(y, x, k_indices, k, method, batch_size =1, max_iters = 1, g
         err_cv_tr.append(loss_tr)
         err_cv_te.append(loss_te)
         
-        # Evaluate the accuracy for train and test data
+        # Evaluate the accuracy for test data
         if (method == 'log') or (method == 'log-newton') or (method == 'regularized-log'):
             y_pred = sigmoid(x_val_sel@w_tr)
         else:
