@@ -5,10 +5,10 @@ import csv
 
 from global_variables import *
 from data_preparation import * 
-from cost import * 
 from cross_validation import *
 from performances import * 
-from proj1_helpers import * 
+from proj1_helpers import *
+from implementations import *
 
 X, Y = load_data()
 
@@ -21,19 +21,19 @@ W = {}
 
 for value in jet_values:
     masks[value] = (X[:,22]==value)
-    X_temp = preprocX(X[masks[value]])
+    X_temp = preprocX(X[masks[value]], X)
     X_divided[value] = X_temp
     Y_temp = Y[masks[value]]
     Y_divided[value] = Y_temp
     W[value], loss = least_squares(Y_temp, X_temp)
 
-pred_div = predict_with_divided_W(X, W)
+pred_div = predict_with_divided_W(X, W, X)
 
 test_data = np.genfromtxt(testing_data, delimiter=',', skip_header=1)
 test_X = test_data[:, 2:]
 test_ids = range(350000,918238)
 
-predictions = predict_with_divided_W(test_X, W)
+predictions = predict_with_divided_W(test_X, W, X)
 
 test_predictions = label_results(predictions)
 test_results = np.column_stack([test_ids, test_predictions])
