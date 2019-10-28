@@ -30,7 +30,7 @@ def load_data():
     X = data[:, 2:]    
     return X, Y
 
-def clean_features(X, X_val, Y, method=''):
+def clean_features(X, X_val, method=''):
     #remove_cols = [0,4,5,6,12,23,24,25,26,27,28]
     #remove_cols = [0,2,3,4,5,6,7,8,9,14,15,16,17,18,19,20,22,23,24,25,26,27,28,29]
     # no preprocessing    
