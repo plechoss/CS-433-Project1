@@ -27,7 +27,7 @@ def cross_validation(y, x, k_indices, k, method, batch_size =1, max_iters = 1, g
         
         # Preprocessing
         # Handling of corrupted data according to clean_method
-        x_tr_clean, x_val_clean = clean_features(x_tr, x_val, y_tr, clean_method)
+        x_tr_clean, x_val_clean = clean_features(x_tr, x_val, clean_method)
         
         # Standardize data
         mu, sigma = standardize(x_tr_clean)
