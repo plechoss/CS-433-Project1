@@ -13,9 +13,9 @@ By Clara Bonnet, Lisa Dratva and Michal Pleskowicz.<br/>CS-433 @ EPFL
     * train.csv : training data
     * test.csv : testing data
 * report.pdf : report with details of methods and approaches used in this project
-    
+* Project1_CV : a Jupyter Notebook with all the cross-validation processing
 ### Usage:
 Running the run.py file produces the final prediction in a submission.csv file. 
 
 ### Requirements:
-We developed and tested the code with Python 3.7.1 and Numpy 1.15.4.
+We developed and tested the code with Python 3.7.1, Jupyter Notebook 5.7.4 and Numpy 1.15.4.
