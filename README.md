@@ -12,9 +12,10 @@ By Clara Bonnet, Lisa Dratva and Michal Pleskowicz.<br/>CS-433 @ EPFL
 * data:
     * train.csv : training data
     * test.csv : testing data
+* report.pdf : report with details of methods and approaches used in this project
     
 ### Usage:
-Running the run.py file produces the final prediction in a submission.csv file. See the report for more details on the methods used, as well as the code itself for details of implementations. 
+Running the run.py file produces the final prediction in a submission.csv file. 
 
 ### Requirements:
 We developed and tested the code with Python 3.7.1 and Numpy 1.15.4.
