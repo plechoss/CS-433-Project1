@@ -23,6 +23,7 @@ def least_squares_SGD(y, tx, initial_w, batch_size, max_iters, gamma,method):
     return w, loss
 
 def MAE_GD(y, tx, initial_w, max_iters, gamma):
+    """ Linear regression using gradient descent with mean absolute error as the cost function"""
     method = "mae"
     w, loss = gradient_descent(y, tx, initial_w, max_iters, gamma, method)
     return w, loss
@@ -57,25 +58,25 @@ def logistic_regression_Newton(y, tx, initial_w, max_iters, gamma):
 
     
 def calculate_hessian(y, tx, w):
-    """return the hessian of the loss function."""
+    """Returns the hessian of the loss function."""
     S = sigmoid(tx@w) * (1-sigmoid(tx@w))
     H = (tx.T*S) @ tx
     return H
 
 
 def compute_mse(y, tx, w):
-    """compute the loss by mse."""
+    """Computes the loss by mse."""
     mse = 1/(2*len(y)) * np.sum((y-tx@w)**2)
     return mse
     
 def sigmoid(t):
-    """apply sigmoid function on t."""
+    """Applies sigmoid function on t."""
     return (1 / (1 + np.exp(-t)))
 
 
 def gradient_descent(y, tx, initial_w, max_iters, gamma, method, lambda_ = 0):
+    """Returns w and loss calculated using gradient descent with given parameters"""
     w = initial_w
-    
     for n_iter in range(max_iters):
         # perform 1 iteration of gradient descent with the chosen method
         gradient = compute_gradient(y, tx, w, method, lambda_)
@@ -118,6 +119,7 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
 
 
 def stochastic_gradient_descent(y, tx, initial_w, batch_size, max_iters, gamma, method):
+    """Gradient descent using minibatches"""
     w = initial_w
     # iterates repeatedly over subsets of the examples
     for minibatch_y, minibatch_tx in batch_iter(y, tx, batch_size, max_iters):
@@ -151,6 +153,7 @@ def ML_methods(y, tx, method, initial_w, batch_size = 1, max_iters = 1, gamma = 
 
 
 def compute_loss(y, tx, w, method, lambda_=0):
+    """Returns the loss for given y, tx, w, method and lambda"""
     # calculate error
     predictions = tx@w
     error = y-predictions
@@ -168,6 +171,7 @@ def compute_loss(y, tx, w, method, lambda_=0):
     return loss
 
 def compute_gradient(y, tx, w, method, lambda_=0):
+    """Returns the gradient for gradient descent"""
     # calculate error
     if(method=='log') or (method=='regularized-log'):
         prediction = sigmoid(tx@w)
