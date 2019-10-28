@@ -66,6 +66,7 @@ def clean_features(X, X_val, method=''):
     return X_clean, X_clean_val
 
 def preprocX(in_x, X):
+    """Standardizes the data in_x with parameters from X and builds a 7-degree polynomial out of it"""
     mu, sigma = standardize(X)
     X_clean = (in_x-mu)/sigma
     return build_poly(X_clean, 6)
